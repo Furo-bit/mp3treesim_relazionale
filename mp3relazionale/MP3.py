@@ -105,11 +105,46 @@ class LCA:
 #Main
 tree1 = read_dotfile('trees/treeEz1.gv')
 tree2 = read_dotfile('trees/treeEz2.gv')
+
 """
 for eti in tree1.label_list:
     print(eti.valore)
-"""
 
-#print(tree1.label_to_nodes)
 for x in tree1.T.successors('1'):
     print(x)
+
+print(tree1.label_to_nodes['root'])
+"""
+for x in tree2.label_list:
+    print("etichetta: " + x.valore + ", discendenti:")
+    print(x.discendenti)
+
+def ricorsione_discendente(tree, nodo):
+    lista_discendenti=list()
+
+    for figlio in tree.T.successors(nodo):
+        lista_discendenti += ricorsione_discendente(tree, figlio)
+        #print("lista dopo ricorsione: ")
+        #print(lista_discendenti)
+    for eti_in_nodo in tree.node_to_labels[nodo]:
+        for eti_in_oggetto in tree.label_list:
+            if (eti_in_nodo == eti_in_oggetto.valore):
+                #print("lista prima dell'assegnazione: ")
+                #print(lista_discendenti)
+                eti_in_oggetto.discendenti=lista_discendenti
+                #print(eti_in_oggetto.discendenti)
+
+    for etichetta_in_nodo in tree.node_to_labels[nodo]:
+        lista_discendenti += etichetta_in_nodo
+    
+    return lista_discendenti
+
+iterator = iter(tree2.label_to_nodes['root'])
+nodo_radice = next(iterator, None)
+ricorsione_discendente(tree2, nodo_radice)
+
+for x in tree2.label_list:
+    print("etichetta: " + x.valore + ", discendenti:")
+    print(x.discendenti)
+
+ 
