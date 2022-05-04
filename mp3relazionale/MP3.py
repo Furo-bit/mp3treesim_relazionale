@@ -12,8 +12,7 @@ class etichetta:
         self.discendenti=list()
         self.conviventi=list()
         self.non_rel=list()
-
-    
+   
 def read_dotfile(path, labeled_only=False, exclude=None): #Legge il file dell'albero
     T = nx.DiGraph(nx.drawing.nx_agraph.read_dot(path))
     return build_tree(T, labeled_only=labeled_only, exclude=exclude)
@@ -103,22 +102,8 @@ class LCA:
         return str(self.LCA_dict)
 
 #Main
-tree1 = read_dotfile('trees/treeEz1.gv')
+tree1 = read_dotfile('trees/tree1.gv')
 tree2 = read_dotfile('trees/treeEz2.gv')
-
-"""
-for eti in tree1.label_list:
-    print(eti.valore)
-
-for x in tree1.T.successors('1'):
-    print(x)
-
-print(tree1.label_to_nodes['root'])
-
-for x in tree2.label_list:
-    print("etichetta: " + x.valore + ", discendenti:")
-    print(x.discendenti)
-"""
 
 def ricorsione_discendente(tree, nodo): #Aggiunta di discendenti
     lista_discendenti=list()
@@ -129,20 +114,44 @@ def ricorsione_discendente(tree, nodo): #Aggiunta di discendenti
     for eti_in_nodo in tree.node_to_labels[nodo]:
         for eti_in_oggetto in tree.label_list:
             if (eti_in_nodo == eti_in_oggetto.valore):
+                #discendenti
                 eti_in_oggetto.discendenti += lista_discendenti
+                #conviventi
+                lista_conviventi=list(tree.node_to_labels[nodo])
+                lista_conviventi.remove(eti_in_oggetto.valore)
+                eti_in_oggetto.conviventi += lista_conviventi
 
     for etichetta_in_nodo in tree.node_to_labels[nodo]:
         lista_discendenti += etichetta_in_nodo
     
     return lista_discendenti
 
+def build_antenati(tree, nodo, lista_antenati):
+    
+    for eti_in_nodo in tree.node_to_labels[nodo]:       
+        for eti_in_oggetto in tree.label_list:
+            if (eti_in_nodo == eti_in_oggetto.valore):
+                #antenati
+                eti_in_oggetto.antenati += lista_antenati
+    
+    if eti_in_nodo!="root":
+        for etichetta_in_nodo in tree.node_to_labels[nodo]:
+            lista_antenati += etichetta_in_nodo
+
+    for figlio in tree.T.successors(nodo):
+        print(lista_antenati)
+        print("nel figlio "+figlio)
+        build_antenati(tree, figlio, lista_antenati)
+
 iterator = iter(tree2.label_to_nodes['root'])
 nodo_radice = next(iterator, None)
 ricorsione_discendente(tree2, nodo_radice)
+build_antenati(tree2, nodo_radice, list())
+
 
 for x in tree2.label_list: #Visualizzazione delle relazioni
-    print("discendenti di " + x.valore)
-    print(x.discendenti)
+    print("Antenati di " + x.valore)
+    print(x.antenati)
     print("-------------------------------")
 
  
