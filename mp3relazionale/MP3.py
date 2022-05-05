@@ -1,4 +1,3 @@
-from lib2to3.pgen2.token import NOTEQUAL
 import networkx as nx
 import numpy as np
 from collections import defaultdict, Counter
@@ -101,15 +100,11 @@ class LCA:
     def __str__(self):
         return str(self.LCA_dict)
 
-#Main
-tree1 = read_dotfile('trees/tree1.gv')
-tree2 = read_dotfile('trees/treeEz2.gv')
-
-def ricorsione_discendente(tree, nodo): #Aggiunta di discendenti
+def build_discendenti(tree, nodo): #Aggiunta di discendenti e conviventi
     lista_discendenti=list()
 
     for figlio in tree.T.successors(nodo):
-        lista_discendenti += ricorsione_discendente(tree, figlio)
+        lista_discendenti += build_discendenti(tree, figlio)
 
     for eti_in_nodo in tree.node_to_labels[nodo]:
         for eti_in_oggetto in tree.label_list:
@@ -126,32 +121,42 @@ def ricorsione_discendente(tree, nodo): #Aggiunta di discendenti
     
     return lista_discendenti
 
-def build_antenati(tree, nodo, lista_antenati):
-    
-    for eti_in_nodo in tree.node_to_labels[nodo]:       
-        for eti_in_oggetto in tree.label_list:
-            if (eti_in_nodo == eti_in_oggetto.valore):
-                #antenati
-                eti_in_oggetto.antenati += lista_antenati
-    
-    if eti_in_nodo!="root":
-        for etichetta_in_nodo in tree.node_to_labels[nodo]:
-            lista_antenati += etichetta_in_nodo
+def build_antenati_da_discendenti(tree): #Aggiunta di antenati
+    for eti1 in tree.label_list:
+        for eti2 in tree.label_list:
+            if eti2.valore in eti1.discendenti:
+                eti2.antenati += eti1.valore
 
-    for figlio in tree.T.successors(nodo):
-        print(lista_antenati)
-        print("nel figlio "+figlio)
-        build_antenati(tree, figlio, lista_antenati)
+def build_non_relazionate(tree): #Aggiunta di etichette non in relazione
+    for eti1 in tree.label_list:
+        for eti2 in tree.label_list:
+            if eti2.valore not in eti1.antenati and eti2.valore not in eti1.discendenti and eti2.valore not in eti1.conviventi and eti2.valore != eti1.valore:
+                eti1.non_rel += eti2.valore
 
-iterator = iter(tree2.label_to_nodes['root'])
-nodo_radice = next(iterator, None)
-ricorsione_discendente(tree2, nodo_radice)
-build_antenati(tree2, nodo_radice, list())
+def build_relazioni(tree): #Metodo per la chiamata ai metodi che aggiungono relazioni
+    iterator = iter(tree.label_to_nodes['root'])
+    nodo_radice = next(iterator, None)
+    build_discendenti(tree, nodo_radice)
+    build_antenati_da_discendenti(tree)
+    build_non_relazionate(tree)   
 
+def visualizza_relazioni(tree): #Visualizzazione delle relazioni
+    for x in tree.label_list: 
+        print("Relazioni di " + x.valore)
+        print("Antenati: ")
+        print(x.antenati)
+        print("Discendenti: ")
+        print(x.discendenti)
+        print("Conviventi: ")
+        print(x.conviventi)        
+        print("Non relazionati: ")
+        print(x.non_rel)
+        print("-------------------------------")
 
-for x in tree2.label_list: #Visualizzazione delle relazioni
-    print("Antenati di " + x.valore)
-    print(x.antenati)
-    print("-------------------------------")
+#Main
+tree1 = read_dotfile('trees/tree1.gv')
+tree2 = read_dotfile('trees/treeEz2.gv')
+build_relazioni(tree2)
+visualizza_relazioni(tree2)
 
  
