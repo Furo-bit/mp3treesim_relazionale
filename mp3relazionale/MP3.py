@@ -1,3 +1,4 @@
+from os import remove
 import networkx as nx
 import numpy as np
 from collections import defaultdict, Counter
@@ -100,6 +101,7 @@ class LCA:
     def __str__(self):
         return str(self.LCA_dict)
 
+#Metodi per relazioni
 def build_discendenti(tree, nodo): #Aggiunta di discendenti e conviventi
     lista_discendenti=list()
 
@@ -153,10 +155,63 @@ def visualizza_relazioni(tree): #Visualizzazione delle relazioni
         print(x.non_rel)
         print("-------------------------------")
 
+def mp3_relazioni(tree):
+    build_relazioni(tree)
+    visualizza_relazioni(tree)
+
+#Metodi per MTT
+def MTT_date_3_etichette(a, b, c):
+    configurazione = 0;
+    if len(a.discendenti) == 2 or len(b.discendenti) == 2 or len(c.discendenti) == 2 : #tutte
+        #1,5,7
+        if len(a.conviventi == 1) or len(b.conviventi == 1) or len(c.conviventi == 1):
+            #7
+            configurazione = 7
+        elif len(a.non_rel == 1) or len(b.non_rel == 1) or len(c.non_rel == 1):
+            #5
+            configurazione = 5
+        else:
+            #1
+            configurazione = 1    
+    elif len(a.non_rel) == 0 or len(b.non_rel) == 0 or len(c.non_rel) == 0: #2,3,4,6,8,9
+        if len(a.non_rel) == 0 and len(b.non_rel) == 0 and len(c.non_rel) == 0: #2,3,4,8
+            #2,4
+            #uso di LCA
+            configurazione = 24
+        elif len(a.conviventi > 0) or len(b.conviventi > 0) or len(c.conviventi > 0): #3,8
+            #8
+            configurazione = 8
+        else:
+            #3   
+            configurazione = 3  
+    elif len(a.conviventi) == 2 and len(b.conviventi) == 2 and len(c.conviventi) == 2: #6,9
+        #9
+        configurazione = 9
+    else:
+        #6
+        configurazione = 6
+    return configurazione    
+
+def filtro_etichetta(etichetta, valore1, valore2, valore3):
+    for elemento in etichetta.antenati:
+        if elemento != valore1 or elemento != valore2 or elemento != valore3:
+            etichetta.antenati.remove(elemento)
+    for elemento in etichetta.discendenti:
+        if elemento != valore1 or elemento != valore2 or elemento != valore3:
+            etichetta.discendenti.remove(elemento)
+    for elemento in etichetta.conviventi:
+        if elemento != valore1 or elemento != valore2 or elemento != valore3:
+            etichetta.conviventi.remove(elemento)
+    for elemento in etichetta.non_rel:
+        if elemento != valore1 or elemento != valore2 or elemento != valore3:
+            etichetta.non_rel.remove(elemento)
+    return etichetta
+
+
+
 #Main
-tree1 = read_dotfile('trees/tree1.gv')
-tree2 = read_dotfile('trees/treeEz2.gv')
-build_relazioni(tree2)
-visualizza_relazioni(tree2)
+tree1 = read_dotfile('trees/tree20.gv')
+mp3_relazioni(tree1)
+
 
  
