@@ -17,7 +17,7 @@ def read_dotfile(path, labeled_only=False, exclude=None): #Legge il file dell'al
     T = nx.DiGraph(nx.drawing.nx_agraph.read_dot(path))
     return build_tree(T, labeled_only=labeled_only, exclude=exclude)
 
-def build_tree(T, labeled_only=False, exclude=None): #costruisce l'albero
+def build_tree(T, labeled_only=False, exclude=None): #Costruisce l'albero
     if not nx.is_tree(T):
         raise ValueError("Not a valid tree.")
 
@@ -102,45 +102,51 @@ class LCA:
         return str(self.LCA_dict)
 
 #Metodi per relazioni
-def build_discendenti(tree, nodo): #Aggiunta di discendenti e conviventi
+def build_relazioni_ricorsione(tree, nodo):
     lista_discendenti=list()
-
+    
     for figlio in tree.T.successors(nodo):
-        lista_discendenti += build_discendenti(tree, figlio)
+        lista_aggiornamento = build_relazioni_ricorsione(tree, figlio)
+        lista_discendenti += lista_aggiornamento
+        #Non Relazionati
+        for figlio2 in tree.T.successors(nodo):
+            if figlio != figlio2:
+                build_non_relazionate(tree, figlio2, lista_aggiornamento)
 
     for eti_in_nodo in tree.node_to_labels[nodo]:
-        for eti_in_oggetto in tree.label_list:
-            if (eti_in_nodo == eti_in_oggetto.valore):
-                #discendenti
-                eti_in_oggetto.discendenti += lista_discendenti
-                #conviventi
-                lista_conviventi=list(tree.node_to_labels[nodo])
-                lista_conviventi.remove(eti_in_oggetto.valore)
-                eti_in_oggetto.conviventi += lista_conviventi
+        if eti_in_nodo != "root":
+            for eti_in_oggetto in tree.label_list:
+                if (eti_in_nodo == eti_in_oggetto.valore):
+                    #Discendenti
+                    eti_in_oggetto.discendenti += lista_discendenti
+                    #Conviventi
+                    lista_conviventi=list(tree.node_to_labels[nodo])
+                    lista_conviventi.remove(eti_in_oggetto.valore)
+                    eti_in_oggetto.conviventi += lista_conviventi
+                for elemento in lista_discendenti:
+                    if (eti_in_oggetto.valore == elemento):
+                        #Antenati
+                        eti_in_oggetto.antenati += eti_in_nodo
+            
 
     for etichetta_in_nodo in tree.node_to_labels[nodo]:
         lista_discendenti += etichetta_in_nodo
     
     return lista_discendenti
-
-def build_antenati_da_discendenti(tree): #Aggiunta di antenati
-    for eti1 in tree.label_list:
-        for eti2 in tree.label_list:
-            if eti2.valore in eti1.discendenti:
-                eti2.antenati += eti1.valore
-
-def build_non_relazionate(tree): #Aggiunta di etichette non in relazione
-    for eti1 in tree.label_list:
-        for eti2 in tree.label_list:
-            if eti2.valore not in eti1.antenati and eti2.valore not in eti1.discendenti and eti2.valore not in eti1.conviventi and eti2.valore != eti1.valore:
-                eti1.non_rel += eti2.valore
+    
+def build_non_relazionate(tree, nodo, lista): #Aggiunta di etichette non relazionate
+    for eti_in_nodo in tree.node_to_labels[nodo]:
+        for eti_in_oggetto in tree.label_list:
+            if (eti_in_nodo == eti_in_oggetto.valore):
+                eti_in_oggetto.non_rel += lista
+    
+    for figlio in tree.T.successors(nodo):
+        build_non_relazionate(tree, figlio, lista)
 
 def build_relazioni(tree): #Metodo per la chiamata ai metodi che aggiungono relazioni
     iterator = iter(tree.label_to_nodes['root'])
     nodo_radice = next(iterator, None)
-    build_discendenti(tree, nodo_radice)
-    build_antenati_da_discendenti(tree)
-    build_non_relazionate(tree)   
+    build_relazioni_ricorsione(tree, nodo_radice)
 
 def visualizza_relazioni(tree): #Visualizzazione delle relazioni
     for x in tree.label_list: 
@@ -160,7 +166,7 @@ def mp3_relazioni(tree):
     visualizza_relazioni(tree)
 
 #Metodi per MTT
-def MTT_date_3_etichette(a, b, c):
+def MTT_date_3_etichette(a, b, c): #Comprensione della configurazione MTT
     configurazione = 0;
     if len(a.discendenti) == 2 or len(b.discendenti) == 2 or len(c.discendenti) == 2 : #tutte
         #1,5,7
@@ -210,8 +216,8 @@ def filtro_etichetta(etichetta, valore1, valore2, valore3):
 
 
 #Main
-tree1 = read_dotfile('trees/tree20.gv')
-mp3_relazioni(tree1)
+tree = read_dotfile('trees/treeEz1.gv')
+mp3_relazioni(tree)
 
 
  
