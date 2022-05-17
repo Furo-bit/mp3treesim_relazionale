@@ -102,7 +102,7 @@ class LCA:
         return str(self.LCA_dict)
 
 #Metodi per relazioni
-def build_relazioni_ricorsione(tree, nodo):
+def build_relazioni_ricorsione(tree, nodo): #Aggiunta di relazioni
     lista_discendenti=list()
     
     for figlio in tree.T.successors(nodo):
@@ -213,11 +213,33 @@ def filtro_etichetta(etichetta, valore1, valore2, valore3):
             etichetta.non_rel.remove(elemento)
     return etichetta
 
+def filtro_condivise(lista_etichette1, lista_etichette2):
+    lista_etichette_condivise = list()
+    for eti1 in lista_etichette1:
+        for eti2 in lista_etichette2:
+            if eti1 == eti2 and eti1 != "root":
+                lista_etichette_condivise += eti1
+    
+    return lista_etichette_condivise
+
+def filtro_compatibili(lista_etichette1, lista_etichette2, lista_condivise):
+    lista_compatibili = list()
+
+    return lista_compatibili
+
+def è_compatibile(etichetta1, etichetta2, etichetta3):
+    compatibile = True;
+
+    return compatibile
 
 
 #Main
-tree = read_dotfile('trees/treeEz1.gv')
-mp3_relazioni(tree)
+tree1 = read_dotfile('trees/tree1.gv')
+tree2 = read_dotfile('trees/tree2.gv')
+mp3_relazioni(tree1)
+mp3_relazioni(tree2)
+print("Lista etichette condivise: ")
+print(filtro_condivise(tree1.label_set, tree2.label_set))
 
 
  
