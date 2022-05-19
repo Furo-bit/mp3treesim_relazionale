@@ -213,33 +213,81 @@ def filtro_etichetta(etichetta, valore1, valore2, valore3):
             etichetta.non_rel.remove(elemento)
     return etichetta
 
-def filtro_condivise(lista_etichette1, lista_etichette2):
+def filtro_condivise(lista_etichette1, lista_etichette2): #ritorna elementi condivisi tra due liste
     lista_etichette_condivise = list()
     for eti1 in lista_etichette1:
         for eti2 in lista_etichette2:
-            if eti1 == eti2 and eti1 != "root":
-                lista_etichette_condivise += eti1
+            if eti1.valore == eti2.valore and eti1.valore != "root":
+                lista_etichette_condivise += eti1.valore
     
     return lista_etichette_condivise
 
-def filtro_compatibili(lista_etichette1, lista_etichette2, lista_condivise):
+def filtro_compatibili(tree1, tree2, lista_condivise):# TO DO
     lista_compatibili = list()
 
     return lista_compatibili
 
-def è_compatibile(etichetta1, etichetta2, etichetta3):
-    compatibile = True;
-
+def è_compatibile3(lista_etichette1, lista_etichette2, valore1, valore2, valore3): #compatibilità di 3 etichette
+    compatibile = False;
+    for eti1 in lista_etichette1:
+        for eti2 in lista_etichette2:
+            if eti1.valore == eti2.valore == valore1:
+                if etichetta_in_relazione(eti1, eti2, valore2) and etichetta_in_relazione(eti1, eti2, valore3):
+                    compatibile = True
     return compatibile
 
+def etichetta_in_relazione(etichetta1, etichetta2, valore):
+    è_presente = False
+    relazione = ""
+    if (valore in etichetta1.antenati and valore in etichetta2.antenati):
+        è_presente = True
+        relazione = "Antenato"
+    elif (valore in etichetta1.discendenti and valore in etichetta2.discendenti):
+        è_presente = True
+        relazione = "Discendente"
+    elif (valore in etichetta1.conviventi and valore in etichetta2.conviventi):
+        è_presente = True
+        relazione = "Convivente"
+    elif (valore in etichetta1.non_rel and valore in etichetta2.non_rel):
+        è_presente = True
+        relazione = "Non relazionato"
 
+    return è_presente, relazione
+
+def build_compatibilità_a_2(lista_etichette1, lista_etichette2):
+    lista_etichette_condivise = filtro_condivise(lista_etichette1, lista_etichette2)
+    lista_compatibili = list()
+    for x in lista_etichette1:
+        for y in lista_etichette2:
+            if x.valore==y.valore:
+                for z in lista_etichette_condivise:
+                    a,relazione = etichetta_in_relazione(x,y,z)
+                    if a:
+                        eti = etichetta(x.valore)
+                        if relazione == "Antenato":
+                            eti.antenati += z
+                        elif relazione == "Discendente":
+                            eti.discendenti += z
+                        elif relazione == "Convivente":
+                            eti.conviventi += z
+                        elif relazione == "Non relazionato":
+                            eti.non_rel += z
+                        lista_compatibili.append(eti)
+    return lista_compatibili
+    
 #Main
-tree1 = read_dotfile('trees/tree1.gv')
-tree2 = read_dotfile('trees/tree2.gv')
+tree1 = read_dotfile('trees/treeEz1.gv')
+tree2 = read_dotfile('trees/treeEz2.gv')
 mp3_relazioni(tree1)
 mp3_relazioni(tree2)
 print("Lista etichette condivise: ")
-print(filtro_condivise(tree1.label_set, tree2.label_set))
+lista=filtro_condivise(tree1.label_list, tree2.label_list)
+for x in lista:
+    print(x)
+print("Lista etichette compatibili: ")
+lista=build_compatibilità_a_2(tree1.label_list, tree2.label_list)
+for x in lista:
+    print(x.valore)
 
 
  
