@@ -257,22 +257,26 @@ def etichetta_in_relazione(etichetta1, etichetta2, valore):
 def build_compatibilità_a_2(lista_etichette1, lista_etichette2):
     lista_etichette_condivise = filtro_condivise(lista_etichette1, lista_etichette2)
     lista_compatibili = list()
+    for e in lista_etichette_condivise:
+       if e != "root":
+          lista_compatibili.append(etichetta(e))
+
     for x in lista_etichette1:
         for y in lista_etichette2:
             if x.valore==y.valore:
                 for z in lista_etichette_condivise:
                     a,relazione = etichetta_in_relazione(x,y,z)
-                    if a:
-                        eti = etichetta(x.valore)
-                        if relazione == "Antenato":
-                            eti.antenati += z
-                        elif relazione == "Discendente":
-                            eti.discendenti += z
-                        elif relazione == "Convivente":
-                            eti.conviventi += z
-                        elif relazione == "Non relazionato":
-                            eti.non_rel += z
-                        lista_compatibili.append(eti)
+                    for w in lista_compatibili:
+                        if w.valore == x.valore:
+                            if a:
+                                if relazione == "Antenato":
+                                    w.antenati += z
+                                elif relazione == "Discendente":
+                                    w.discendenti += z
+                                elif relazione == "Convivente":
+                                    w.conviventi += z
+                                elif relazione == "Non relazionato":
+                                    w.non_rel += z
     return lista_compatibili
     
 #Main
@@ -286,8 +290,18 @@ for x in lista:
     print(x)
 print("Lista etichette compatibili: ")
 lista=build_compatibilità_a_2(tree1.label_list, tree2.label_list)
-for x in lista:
-    print(x.valore)
+
+for x in lista: 
+    print("Relazioni di " + x.valore)
+    print("Antenati: ")
+    print(x.antenati)
+    print("Discendenti: ")
+    print(x.discendenti)
+    print("Conviventi: ")
+    print(x.conviventi)        
+    print("Non relazionati: ")
+    print(x.non_rel)
+    print("-------------------------------")
 
 
  
