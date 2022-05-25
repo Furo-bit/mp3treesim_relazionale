@@ -1,4 +1,5 @@
 from os import remove
+from re import X
 import networkx as nx
 import numpy as np
 from collections import defaultdict, Counter
@@ -161,7 +162,7 @@ def visualizza_relazioni(tree): #Visualizzazione delle relazioni
         print(x.non_rel)
         print("-------------------------------")
 
-def mp3_relazioni(tree):
+def mp3_relazioni(tree): 
     build_relazioni(tree)
     visualizza_relazioni(tree)
 
@@ -198,21 +199,6 @@ def MTT_date_3_etichette(a, b, c): #Comprensione della configurazione MTT
         configurazione = 6
     return configurazione    
 
-def filtro_etichetta(etichetta, valore1, valore2, valore3):
-    for elemento in etichetta.antenati:
-        if elemento != valore1 or elemento != valore2 or elemento != valore3:
-            etichetta.antenati.remove(elemento)
-    for elemento in etichetta.discendenti:
-        if elemento != valore1 or elemento != valore2 or elemento != valore3:
-            etichetta.discendenti.remove(elemento)
-    for elemento in etichetta.conviventi:
-        if elemento != valore1 or elemento != valore2 or elemento != valore3:
-            etichetta.conviventi.remove(elemento)
-    for elemento in etichetta.non_rel:
-        if elemento != valore1 or elemento != valore2 or elemento != valore3:
-            etichetta.non_rel.remove(elemento)
-    return etichetta
-
 def filtro_condivise(lista_etichette1, lista_etichette2): #ritorna elementi condivisi tra due liste
     lista_etichette_condivise = list()
     for eti1 in lista_etichette1:
@@ -222,21 +208,7 @@ def filtro_condivise(lista_etichette1, lista_etichette2): #ritorna elementi cond
     
     return lista_etichette_condivise
 
-def filtro_compatibili(tree1, tree2, lista_condivise):# TO DO
-    lista_compatibili = list()
-
-    return lista_compatibili
-
-def è_compatibile3(lista_etichette1, lista_etichette2, valore1, valore2, valore3): #compatibilità di 3 etichette
-    compatibile = False;
-    for eti1 in lista_etichette1:
-        for eti2 in lista_etichette2:
-            if eti1.valore == eti2.valore == valore1:
-                if etichetta_in_relazione(eti1, eti2, valore2) and etichetta_in_relazione(eti1, eti2, valore3):
-                    compatibile = True
-    return compatibile
-
-def etichetta_in_relazione(etichetta1, etichetta2, valore):
+def etichetta_in_relazione(etichetta1, etichetta2, valore): #dice se è con che relazione un valore è relazionato con un'etichetta
     è_presente = False
     relazione = ""
     if (valore in etichetta1.antenati and valore in etichetta2.antenati):
@@ -254,7 +226,7 @@ def etichetta_in_relazione(etichetta1, etichetta2, valore):
 
     return è_presente, relazione
 
-def build_compatibilità_a_2(lista_etichette1, lista_etichette2):
+def build_compatibilità_a_2(lista_etichette1, lista_etichette2): #compatibilità a 2 tra due liste di etichette
     lista_etichette_condivise = filtro_condivise(lista_etichette1, lista_etichette2)
     lista_compatibili = list()
     for e in lista_etichette_condivise:
@@ -279,29 +251,35 @@ def build_compatibilità_a_2(lista_etichette1, lista_etichette2):
                                     w.non_rel += z
     return lista_compatibili
     
+def build_compatibilità_a_3_dalla_2(lista_compatibili_a_2):
+    terne_compatibili = list()
+    for x in lista_compatibili_a_2:
+        for y in lista_compatibili_a_2:
+            for z in lista_compatibili_a_2:
+                if valore_in_relazioni(x, y.valore) and valore_in_relazioni(x, z.valore) and valore_in_relazioni(y, x.valore) and valore_in_relazioni(y, z.valore) and valore_in_relazioni(z, x.valore) and valore_in_relazioni(z, y.valore)  and (z != x.valore and z != y.valore and x.valore != y.valore):
+                    terna = x.valore + y.valore + z.valore
+                    terna = (','.join(sorted(terna))) #.replace(',','')
+                    #print(terna)
+                    if terna not in terne_compatibili:
+                        terne_compatibili.append(terna)
+    return terne_compatibili
+
+def valore_in_relazioni(etichetta, valore):
+    x=False
+    if (valore in etichetta.antenati or valore in etichetta.discendenti or valore in etichetta.conviventi or valore in etichetta.non_rel):
+        x=True
+    return x    
+
 #Main
 tree1 = read_dotfile('trees/treeEz1.gv')
 tree2 = read_dotfile('trees/treeEz2.gv')
 mp3_relazioni(tree1)
 mp3_relazioni(tree2)
-print("Lista etichette condivise: ")
-lista=filtro_condivise(tree1.label_list, tree2.label_list)
-for x in lista:
+comp2=build_compatibilità_a_2(tree1.label_list, tree2.label_list)
+print("Lista terne compatibili: ")
+comp3 = build_compatibilità_a_3_dalla_2(comp2)
+for x in comp3:
     print(x)
-print("Lista etichette compatibili: ")
-lista=build_compatibilità_a_2(tree1.label_list, tree2.label_list)
-
-for x in lista: 
-    print("Relazioni di " + x.valore)
-    print("Antenati: ")
-    print(x.antenati)
-    print("Discendenti: ")
-    print(x.discendenti)
-    print("Conviventi: ")
-    print(x.conviventi)        
-    print("Non relazionati: ")
-    print(x.non_rel)
-    print("-------------------------------")
 
 
  
