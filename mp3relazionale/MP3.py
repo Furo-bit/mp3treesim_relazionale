@@ -13,6 +13,22 @@ class etichetta:
         self.discendenti=list()
         self.conviventi=list()
         self.non_rel=list()
+
+    def aggiungi_relazione(self, relazione, valore):
+        if relazione=="Antenato":
+            self.antenati += valore
+        elif relazione=="Discendente":
+            self.discendenti += valore
+        elif relazione=="Convivente":
+            self.conviventi += valore
+        elif relazione=="Non relazionato":
+            self.non_rel += valore
+
+class terna_compatibile:
+    def __init__(self, valore, configurazioni):
+        self.valore = valore
+        self.configurazioni = configurazioni
+
    
 def read_dotfile(path, labeled_only=False, exclude=None): #Legge il file dell'albero
     T = nx.DiGraph(nx.drawing.nx_agraph.read_dot(path))
@@ -164,17 +180,17 @@ def visualizza_relazioni(tree): #Visualizzazione delle relazioni
 
 def mp3_relazioni(tree): 
     build_relazioni(tree)
-    visualizza_relazioni(tree)
+    #visualizza_relazioni(tree)
 
 #Metodi per MTT
-def MTT_date_3_etichette(a, b, c): #Comprensione della configurazione MTT
+def MTT_date_3_etichette(a, b, c): #Comprensione della configurazione MTT con 3 etichette
     configurazione = 0;
     if len(a.discendenti) == 2 or len(b.discendenti) == 2 or len(c.discendenti) == 2 : #tutte
         #1,5,7
-        if len(a.conviventi == 1) or len(b.conviventi == 1) or len(c.conviventi == 1):
+        if len(a.conviventi) == 1 or len(b.conviventi) == 1 or len(c.conviventi) == 1:
             #7
             configurazione = 7
-        elif len(a.non_rel == 1) or len(b.non_rel == 1) or len(c.non_rel == 1):
+        elif len(a.non_rel) == 1 or len(b.non_rel) == 1 or len(c.non_rel) == 1:
             #5
             configurazione = 5
         else:
@@ -185,7 +201,7 @@ def MTT_date_3_etichette(a, b, c): #Comprensione della configurazione MTT
             #2,4
             #uso di LCA
             configurazione = 24
-        elif len(a.conviventi > 0) or len(b.conviventi > 0) or len(c.conviventi > 0): #3,8
+        elif len(a.conviventi) > 0 or len(b.conviventi) > 0 or len(c.conviventi) > 0: #3,8
             #8
             configurazione = 8
         else:
@@ -297,9 +313,9 @@ def build_compatibilità_a_2(lista_etichette1, lista_etichette2): #compatibilit�
         for y in lista_etichette2:
             if x.valore==y.valore:
                 for z in lista_etichette_condivise:
-                    #a,relazione = etichetta_in_relazione(x,y,z)
                     for w in lista_compatibili:
                         if w.valore == x.valore:
+                            #qui sotto posso predictare le configurazioni MTT comp3
                             a,quantità = etichetta_in_antenati(x,y,z)
                             if a:
                                 for _ in range(quantità):
@@ -317,49 +333,121 @@ def build_compatibilità_a_2(lista_etichette1, lista_etichette2): #compatibilit�
                                 for _ in range(quantità):
                                     w.non_rel += z
                             
-                            """
-                            if a:
-                                if relazione == "Antenato":
-                                    w.antenati += z
-                                elif relazione == "Discendente":
-                                    w.discendenti += z
-                                elif relazione == "Convivente":
-                                    w.conviventi += z
-                                elif relazione == "Non relazionato":
-                                    w.non_rel += z
-                            """
     return lista_compatibili
     
-def build_compatibilità_a_3_dalla_2(lista_compatibili_a_2):
+def build_compatibilità_a_3_dalla_2(lista_compatibili_a_2): #compatibilità a 3 data quella a 2
     terne_compatibili = list()
+    terne_di_ritorno = list()
     for x in lista_compatibili_a_2:
         for y in lista_compatibili_a_2:
             for z in lista_compatibili_a_2:
                 if (x.valore != y.valore) and (x.valore != z.valore) and (y.valore != z.valore):
-                    if valore_in_relazioni(x, y.valore) and valore_in_relazioni(x, z.valore) and valore_in_relazioni(y, x.valore) and valore_in_relazioni(y, z.valore) and valore_in_relazioni(z, x.valore) and valore_in_relazioni(z, y.valore)  and (z != x.valore and z != y.valore and x.valore != y.valore):
-                        terna = x.valore + y.valore + z.valore
-                        terna = (','.join(sorted(terna))) #.replace(',','')
-                        #print(terna)
-                        if terna not in terne_compatibili:
-                            terne_compatibili.append(terna)
-    return terne_compatibili
+                    """
+                    #Devo contare quante in quali relazioni
+                    a1,a_b=valore_in_relazioni(x, y.valore)
+                    a2,a_c=valore_in_relazioni(x, z.valore)
+                    b1,b_a=valore_in_relazioni(y, x.valore)
+                    b2,b_c=valore_in_relazioni(y, z.valore)
+                    c1,c_a=valore_in_relazioni(z, x.valore)
+                    c2,c_b=valore_in_relazioni(z, y.valore)
+                    print(a_b)
+                    print(a_c)
+                    print(b_a)
+                    print(b_c)
+                    print(c_a)
+                    print(c_b)
+                    # solo in fratelli e non relazionati ho 6 relazioni uguali
+                    
+                    if a1 and a2 and b1 and b2 and c1 and c2  and (z != x.valore and z != y.valore and x.valore != y.valore):
+                        a=etichetta(x.valore)
+                        b=etichetta(y.valore)
+                        c=etichetta(z.valore)
+                        a.aggiungi_relazione(a_b, y.valore)
+                        a.aggiungi_relazione(a_c, z.valore)
+                        b.aggiungi_relazione(b_a, x.valore)
+                        b.aggiungi_relazione(b_c, z.valore)
+                        c.aggiungi_relazione(c_a, x.valore)
+                        c.aggiungi_relazione(c_b, y.valore)
+                        configurazione = MTT_date_3_etichette(a, b, c)  
+                    """   
+
+                    terna = x.valore + y.valore + z.valore
+                    terna = (','.join(sorted(terna))) #.replace(',','')  
+                    configurazioni = configurazione_da_comp2_e_etichetta(x, y, z)
+                    if terna not in terne_compatibili and configurazioni != []:
+                        terne_compatibili.append(terna)
+                        nuova_terna = terna_compatibile(terna, configurazioni)
+                        terne_di_ritorno.append(nuova_terna)
+    return terne_di_ritorno
+
+def configurazione_da_comp2_e_etichetta(a, b, c): #configurazione con uso di logica booleana
+    configurazioni = list() 
+    if a.valore in b.antenati or a.valore in b.discendenti:
+        if (a.valore in c.conviventi and b.valore in c.discendenti):# or (b.valore in c.conviventi and a.valore in c.discendenti):
+            configurazioni.append(6)
+        if (a.valore in c.antenati and b.valore in c.conviventi):# or (b.valore in c.antenati and a.valore in c.conviventi):
+            configurazioni.append(7)
+        if (a.valore in c.antenati and b.valore in c.non_rel):# or (b.valore in c.antenati and a.valore in c.non_rel):
+            configurazioni.append(5)
+        if (a.valore in c.antenati and b.valore in c.antenati) or (a.valore in c.discendenti and b.valore in c.discendenti):
+            configurazioni.append(1)
+        if (a.valore in c.non_rel and b.valore in c.non_rel):
+            configurazioni.append(3)
+    if a.valore in b.non_rel:
+        if (a.valore in c.non_rel and b.valore in c.non_rel):
+            configurazioni.append(24)
+        if (a.valore in c.antenati and b.valore in c.non_rel):# or (b.valore in c.antenati and a.valore in c.non_rel):
+            configurazioni.append(3)
+        if (a.valore in c.discendenti and b.valore in c.discendenti):
+            configurazioni.append(5)
+        if (a.valore in c.conviventi and b.valore in c.non_rel):# or (b.valore in c.conviventi and a.valore in c.non_rel):
+            configurazioni.append(8)
+    if a.valore in b.conviventi:
+        if (a.valore in c.antenati and b.valore in c.antenati):
+            configurazioni.append(6)
+        if (a.valore in c.discendenti and b.valore in c.discendenti):
+            configurazioni.append(7)
+        if (a.valore in c.non_rel and b.valore in c.non_rel):
+            configurazioni.append(8)
+        if (a.valore in c.conviventi and b.valore in c.conviventi):
+            configurazioni.append(9)
+    return configurazioni
+
 
 def valore_in_relazioni(etichetta, valore):
     x=False
-    if (valore in etichetta.antenati or valore in etichetta.discendenti or valore in etichetta.conviventi or valore in etichetta.non_rel):
+    relazione=""
+    if valore in etichetta.antenati:
         x=True
-    return x    
+        relazione="Antenato"
+    elif valore in etichetta.discendenti:
+        x=True
+        relazione="Discendente"
+    elif valore in etichetta.conviventi:
+        x=True
+        relazione="Convivente"
+    elif valore in etichetta.non_rel:
+        x=True
+        relazione="Non relazionato"
+
+    return x,relazione     
 
 #Main
-tree1 = read_dotfile('trees/treeLimite.gv')
-tree2 = read_dotfile('trees/treeLimite.gv')
+tree1 = read_dotfile('trees/tree30.gv')
+tree2 = read_dotfile('trees/treeEz1.gv')
 mp3_relazioni(tree1)
 mp3_relazioni(tree2)
-comp2=build_compatibilità_a_2(tree1.label_list, tree2.label_list)
-print("Lista terne compatibili: ")
+comp2 = build_compatibilità_a_2(tree1.label_list, tree2.label_list)
 comp3 = build_compatibilità_a_3_dalla_2(comp2)
+
 for x in comp3:
-    print(x)
+    print("Terna compatibile:")
+    print(x.valore)
+    print("Configurazioni:")
+    for y in x.configurazioni:
+        print(y)
+    print("---------------------")
+    
 
 
  
