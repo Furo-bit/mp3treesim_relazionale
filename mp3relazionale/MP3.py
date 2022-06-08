@@ -4,6 +4,7 @@ import networkx as nx
 import numpy as np
 from collections import defaultdict, Counter
 from pygraphviz import AGraph
+import math
 
 class etichetta:
     
@@ -28,7 +29,6 @@ class terna_compatibile:
     def __init__(self, valore, configurazioni):
         self.valore = valore
         self.configurazioni = configurazioni
-
    
 def read_dotfile(path, labeled_only=False, exclude=None): #Legge il file dell'albero
     T = nx.DiGraph(nx.drawing.nx_agraph.read_dot(path))
@@ -119,6 +119,7 @@ class LCA:
         return str(self.LCA_dict)
 
 #Metodi per relazioni
+
 def build_relazioni_ricorsione(tree, nodo): #Aggiunta di relazioni
     lista_discendenti=list()
     
@@ -180,41 +181,10 @@ def visualizza_relazioni(tree): #Visualizzazione delle relazioni
 
 def mp3_relazioni(tree): 
     build_relazioni(tree)
-    #visualizza_relazioni(tree)
+    visualizza_relazioni(tree)
 
 #Metodi per MTT
-def MTT_date_3_etichette(a, b, c): #Comprensione della configurazione MTT con 3 etichette
-    configurazione = 0;
-    if len(a.discendenti) == 2 or len(b.discendenti) == 2 or len(c.discendenti) == 2 : #tutte
-        #1,5,7
-        if len(a.conviventi) == 1 or len(b.conviventi) == 1 or len(c.conviventi) == 1:
-            #7
-            configurazione = 7
-        elif len(a.non_rel) == 1 or len(b.non_rel) == 1 or len(c.non_rel) == 1:
-            #5
-            configurazione = 5
-        else:
-            #1
-            configurazione = 1    
-    elif len(a.non_rel) == 0 or len(b.non_rel) == 0 or len(c.non_rel) == 0: #2,3,4,6,8,9
-        if len(a.non_rel) == 0 and len(b.non_rel) == 0 and len(c.non_rel) == 0: #2,3,4,8
-            #2,4
-            #uso di LCA
-            configurazione = 24
-        elif len(a.conviventi) > 0 or len(b.conviventi) > 0 or len(c.conviventi) > 0: #3,8
-            #8
-            configurazione = 8
-        else:
-            #3   
-            configurazione = 3  
-    elif len(a.conviventi) == 2 and len(b.conviventi) == 2 and len(c.conviventi) == 2: #6,9
-        #9
-        configurazione = 9
-    else:
-        #6
-        configurazione = 6
-    return configurazione    
-
+    
 def filtro_condivise(lista_etichette1, lista_etichette2): #ritorna elementi condivisi tra due liste
     lista_etichette_condivise = list()
     for eti1 in lista_etichette1:
@@ -315,7 +285,6 @@ def build_compatibilità_a_2(lista_etichette1, lista_etichette2): #compatibilit�
                 for z in lista_etichette_condivise:
                     for w in lista_compatibili:
                         if w.valore == x.valore:
-                            #qui sotto posso predictare le configurazioni MTT comp3
                             a,quantità = etichetta_in_antenati(x,y,z)
                             if a:
                                 for _ in range(quantità):
@@ -341,38 +310,9 @@ def build_compatibilità_a_3_dalla_2(lista_compatibili_a_2): #compatibilità a 3
     for x in lista_compatibili_a_2:
         for y in lista_compatibili_a_2:
             for z in lista_compatibili_a_2:
-                if (x.valore != y.valore) and (x.valore != z.valore) and (y.valore != z.valore):
-                    """
-                    #Devo contare quante in quali relazioni
-                    a1,a_b=valore_in_relazioni(x, y.valore)
-                    a2,a_c=valore_in_relazioni(x, z.valore)
-                    b1,b_a=valore_in_relazioni(y, x.valore)
-                    b2,b_c=valore_in_relazioni(y, z.valore)
-                    c1,c_a=valore_in_relazioni(z, x.valore)
-                    c2,c_b=valore_in_relazioni(z, y.valore)
-                    print(a_b)
-                    print(a_c)
-                    print(b_a)
-                    print(b_c)
-                    print(c_a)
-                    print(c_b)
-                    # solo in fratelli e non relazionati ho 6 relazioni uguali
-                    
-                    if a1 and a2 and b1 and b2 and c1 and c2  and (z != x.valore and z != y.valore and x.valore != y.valore):
-                        a=etichetta(x.valore)
-                        b=etichetta(y.valore)
-                        c=etichetta(z.valore)
-                        a.aggiungi_relazione(a_b, y.valore)
-                        a.aggiungi_relazione(a_c, z.valore)
-                        b.aggiungi_relazione(b_a, x.valore)
-                        b.aggiungi_relazione(b_c, z.valore)
-                        c.aggiungi_relazione(c_a, x.valore)
-                        c.aggiungi_relazione(c_b, y.valore)
-                        configurazione = MTT_date_3_etichette(a, b, c)  
-                    """   
-
+                if (x.valore != y.valore) and (x.valore != z.valore) and (y.valore != z.valore):   
                     terna = x.valore + y.valore + z.valore
-                    terna = (','.join(sorted(terna))) #.replace(',','')  
+                    terna = (','.join(sorted(terna)))  
                     configurazioni = configurazione_da_comp2_e_etichetta(x, y, z)
                     if terna not in terne_compatibili and configurazioni != []:
                         terne_compatibili.append(terna)
@@ -413,7 +353,6 @@ def configurazione_da_comp2_e_etichetta(a, b, c): #configurazione con uso di log
             configurazioni.append(9)
     return configurazioni
 
-
 def valore_in_relazioni(etichetta, valore):
     x=False
     relazione=""
@@ -433,21 +372,29 @@ def valore_in_relazioni(etichetta, valore):
     return x,relazione     
 
 #Main
-tree1 = read_dotfile('trees/tree30.gv')
-tree2 = read_dotfile('trees/treeEz1.gv')
+tree1 = read_dotfile('trees/treeEz1.gv') #Inserire qui il nome dell'albero con il primo albero
+tree2 = read_dotfile('trees/treeEz2.gv') #Inserire qui il nome dell'albero con il secondo albero
 mp3_relazioni(tree1)
 mp3_relazioni(tree2)
 comp2 = build_compatibilità_a_2(tree1.label_list, tree2.label_list)
 comp3 = build_compatibilità_a_3_dalla_2(comp2)
+condivise = filtro_condivise(tree1.label_list, tree2.label_list)
+print("Etichette condivise:")
+print(condivise, sep=' ')
 
+print("Terne compatibili:")
 for x in comp3:
-    print("Terna compatibile:")
     print(x.valore)
     print("Configurazioni:")
-    for y in x.configurazioni:
-        print(y)
+    print(x.configurazioni, sep=' ')
     print("---------------------")
     
-
-
- 
+print("Numero di terne possibili:")
+t_poss = math.comb(len(condivise), 3)
+print(t_poss)
+print("Numero terne compatibili:")
+t_comp = len(comp3)
+print(t_comp)
+print("Valore di compatibilità/similarità:")
+print(t_comp/t_poss)
+#Ideato e scritto da Andrea Furini
