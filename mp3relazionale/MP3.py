@@ -307,6 +307,7 @@ def build_compatibilità_a_2(lista_etichette1, lista_etichette2): #compatibilit�
 def build_compatibilità_a_3_dalla_2(lista_compatibili_a_2): #compatibilità a 3 data quella a 2
     terne_compatibili = list()
     terne_di_ritorno = list()
+    
     for x in lista_compatibili_a_2:
         for y in lista_compatibili_a_2:
             for z in lista_compatibili_a_2:
@@ -318,6 +319,12 @@ def build_compatibilità_a_3_dalla_2(lista_compatibili_a_2): #compatibilità a 3
                         terne_compatibili.append(terna)
                         nuova_terna = terna_compatibile(terna, configurazioni)
                         terne_di_ritorno.append(nuova_terna)
+                    else:
+                        for t in terne_di_ritorno:
+                            if t.valore == terna:
+                                t.configurazioni += configurazioni
+    for x in terne_di_ritorno:
+        x.configurazioni = list(dict.fromkeys(x.configurazioni))
     return terne_di_ritorno
 
 def configurazione_da_comp2_e_etichetta(a, b, c): #configurazione con uso di logica booleana
@@ -372,9 +379,11 @@ def valore_in_relazioni(etichetta, valore):
     return x,relazione     
 
 #Main
-tree1 = read_dotfile('trees/treeEz1.gv') #Inserire qui il nome dell'albero con il primo albero
-tree2 = read_dotfile('trees/treeEz2.gv') #Inserire qui il nome dell'albero con il secondo albero
+tree1 = read_dotfile('trees/treeTesi1.gv') #Inserire qui il nome dell'albero con il primo albero
+tree2 = read_dotfile('trees/treeTesi2.gv') #Inserire qui il nome dell'albero con il secondo albero
+print("Relazioni in T1:")
 mp3_relazioni(tree1)
+print("Relazioni in T2:")
 mp3_relazioni(tree2)
 comp2 = build_compatibilità_a_2(tree1.label_list, tree2.label_list)
 comp3 = build_compatibilità_a_3_dalla_2(comp2)
@@ -389,7 +398,7 @@ for x in comp3:
     print(x.configurazioni, sep=' ')
     print("---------------------")
     
-print("Numero di terne possibili:")
+print("Numero massimo di terne possibili:")
 t_poss = math.comb(len(condivise), 3)
 print(t_poss)
 print("Numero terne compatibili:")
