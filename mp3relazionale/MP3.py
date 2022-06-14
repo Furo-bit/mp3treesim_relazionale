@@ -379,8 +379,8 @@ def valore_in_relazioni(etichetta, valore):
     return x,relazione     
 
 #Main
-tree1 = read_dotfile('trees/treeTesi1.gv') #Inserire qui il nome dell'albero con il primo albero
-tree2 = read_dotfile('trees/treeTesi2.gv') #Inserire qui il nome dell'albero con il secondo albero
+tree1 = read_dotfile('trees/treeTesi2.gv') #Inserire qui il nome dell'albero con il primo albero
+tree2 = read_dotfile('trees/treeTesi1.gv') #Inserire qui il nome dell'albero con il secondo albero
 print("Relazioni in T1:")
 mp3_relazioni(tree1)
 print("Relazioni in T2:")
@@ -388,22 +388,37 @@ mp3_relazioni(tree2)
 comp2 = build_compatibilità_a_2(tree1.label_list, tree2.label_list)
 comp3 = build_compatibilità_a_3_dalla_2(comp2)
 condivise = filtro_condivise(tree1.label_list, tree2.label_list)
-print("Etichette condivise:")
-print(condivise, sep=' ')
 
-print("Terne compatibili:")
+
+compatibili = set()
+for x in comp3:
+    compatibili.add(x.valore[0])
+    compatibili.add(x.valore[2])
+    compatibili.add(x.valore[4])
+
+
+# non sempre compatibili == condivise !!!
+
 for x in comp3:
     print(x.valore)
-    print("Configurazioni:")
-    print(x.configurazioni, sep=' ')
+    print("Configurazioni:", end=' ')
+    print(x.configurazioni)
     print("---------------------")
-    
+
+
+print("Etichette condivise:")
+print(condivise, sep=' ')
+print("Terne compatibili:")
+print(sorted(compatibili))
 print("Numero massimo di terne possibili:")
 t_poss = math.comb(len(condivise), 3)
 print(t_poss)
 print("Numero terne compatibili:")
 t_comp = len(comp3)
 print(t_comp)
-print("Valore di compatibilità/similarità:")
-print(t_comp/t_poss)
+print("Valore di compatibilità:")
+if(t_poss==0):
+    print(0)
+else:    
+    print(t_comp/t_poss)
 #Ideato e scritto da Andrea Furini
