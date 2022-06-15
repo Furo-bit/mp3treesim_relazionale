@@ -181,7 +181,7 @@ def visualizza_relazioni(tree): #Visualizzazione delle relazioni
 
 def mp3_relazioni(tree): 
     build_relazioni(tree)
-    visualizza_relazioni(tree)
+    #visualizza_relazioni(tree)
 
 #Metodi per MTT
     
@@ -378,27 +378,86 @@ def valore_in_relazioni(etichetta, valore):
 
     return x,relazione     
 
+
+
+#Metodi per contrazione
+def filtro_etichette_contrazione(nodi, oggetti_compatibili):
+    lista_comp3 = list()
+    for x in oggetti_compatibili:
+        lista_comp3 += x.valore
+
+    for nodo in nodi:
+        #prendo le etichette
+        etichette = nodo[1]['label']
+        compatibili=""
+        #le divido grazie alla virgola
+        x = etichette.split(",")
+        #metto in compatibili quelle buone
+        for y in x:
+            if y == "root" or y in lista_comp3:
+                compatibili += y + ","
+        if compatibili != "":
+            compatibili = compatibili[:-1]
+        #assegno al nodo la nuova label
+        nodo[1]['label'] = compatibili
+
+def visualizza_etichette(nodi):
+    for x in nodi:
+        y = x[1]['label']
+        print(y)
+
 #Main
-tree1 = read_dotfile('trees/treeTesi2.gv') #Inserire qui il nome dell'albero con il primo albero
-tree2 = read_dotfile('trees/treeTesi1.gv') #Inserire qui il nome dell'albero con il secondo albero
-print("Relazioni in T1:")
+
+pathT1 = 'trees/tree12.gv' #Inserire qui il nome del primo albero
+pathT2 = 'trees/tree16.gv' #Inserire qui il nome del secondo albero
+
+tree1 = read_dotfile(pathT1) 
+tree2 = read_dotfile(pathT2) 
+
+T1 = nx.DiGraph(nx.drawing.nx_agraph.read_dot(pathT1))
+T2 = nx.DiGraph(nx.drawing.nx_agraph.read_dot(pathT2))
+
+"""
+for x in T1.edges:
+    print(x)
+"""
+
+print("Prima del filtro:")
+visualizza_etichette(T1.nodes(data = True))
+print("-----------------------------")
+visualizza_etichette(T2.nodes(data = True))
+print("-----------------------------")
+
+
+
+#print("Relazioni in T1:")
 mp3_relazioni(tree1)
-print("Relazioni in T2:")
+#print("Relazioni in T2:")
 mp3_relazioni(tree2)
 comp2 = build_compatibilità_a_2(tree1.label_list, tree2.label_list)
 comp3 = build_compatibilità_a_3_dalla_2(comp2)
 condivise = filtro_condivise(tree1.label_list, tree2.label_list)
 
-
 compatibili = set()
+print("Etichette compatibili: ", end='')
 for x in comp3:
     compatibili.add(x.valore[0])
     compatibili.add(x.valore[2])
     compatibili.add(x.valore[4])
+for x in compatibili:
+    print(x, end=',')
+print()
 
+filtro_etichette_contrazione(T1.nodes(data = True), comp3)
+filtro_etichette_contrazione(T2.nodes(data = True), comp3)
 
-# non sempre compatibili == condivise !!!
+print("Dopo filtro:")
+visualizza_etichette(T1.nodes(data = True))
+print("-----------------------------")
+visualizza_etichette(T2.nodes(data = True))
+print("-----------------------------")
 
+"""
 for x in comp3:
     print(x.valore)
     print("Configurazioni:", end=' ')
@@ -421,4 +480,7 @@ if(t_poss==0):
     print(0)
 else:    
     print(t_comp/t_poss)
+
+"""
+
 #Ideato e scritto da Andrea Furini
