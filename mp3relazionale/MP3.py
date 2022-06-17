@@ -1,3 +1,4 @@
+from itertools import count
 from os import remove
 from re import X
 import networkx as nx
@@ -5,6 +6,7 @@ import numpy as np
 from collections import defaultdict, Counter
 from pygraphviz import AGraph
 import math
+import copy
 
 class etichetta:
     
@@ -406,10 +408,41 @@ def visualizza_etichette(nodi):
         y = x[1]['label']
         print(y)
 
+def contrazione_comp3(tree):
+
+    nodi_copia = copy.deepcopy(tree.nodes(data = True))
+
+    for nodo in nodi_copia:
+        if nodo[1]['label']=='': #controllo se è un nodo vuoto da contrarre
+            print("Trovato nodo vuoto")
+            if len(list(tree.successors(nodo[0]))) == 0: #caso foglia, caso 1
+                #rimuovo arco tra nodo e antenato
+                antenato = list(tree.predecessors(nodo[0]))[0]
+                tree.remove_edge(antenato, nodo[0])
+                #rimuovo nodo
+                print("rimuovo nodo")
+                print(nodo[0])
+                tree.remove_node(nodo[0])
+            elif len(list(tree.successors(nodo[0]))) >= 1 and len(list(tree.predecessors(nodo[0]))) == 1: #caso 2
+                print("Tolgo e compatto nodo")
+                print(nodo[0])
+                #per ogni discedente, tolgo archi dal nodo
+                #per ogni discendente, collego ad antenato
+                antenato = list(tree.predecessors(nodo[0]))[0]
+                discendenti_copia = copy.deepcopy(tree.successors(nodo[0]))
+                for discendente in discendenti_copia:
+                    tree.remove_edge(nodo[0], discendente[0])                    
+                    tree.add_edge(antenato, discendente[0])
+                #tolgo collegamento da antenato a nodo
+                tree.remove_edge(antenato, nodo[0])
+                #tolgo nodo
+                tree.remove_node(nodo[0])
+                
+
 #Main
 
-pathT1 = 'trees/tree12.gv' #Inserire qui il nome del primo albero
-pathT2 = 'trees/tree16.gv' #Inserire qui il nome del secondo albero
+pathT1 = 'trees/tree30.gv' #Inserire qui il nome del primo albero
+pathT2 = 'trees/tree12.gv' #Inserire qui il nome del secondo albero
 
 tree1 = read_dotfile(pathT1) 
 tree2 = read_dotfile(pathT2) 
@@ -417,17 +450,21 @@ tree2 = read_dotfile(pathT2)
 T1 = nx.DiGraph(nx.drawing.nx_agraph.read_dot(pathT1))
 T2 = nx.DiGraph(nx.drawing.nx_agraph.read_dot(pathT2))
 
-"""
+print("Prima del filtro:")
+
+for x in T1.nodes(data=True):
+    print(x)
 for x in T1.edges:
     print(x)
-"""
 
-print("Prima del filtro:")
+print("-----------------------------")
+
+"""
 visualizza_etichette(T1.nodes(data = True))
 print("-----------------------------")
 visualizza_etichette(T2.nodes(data = True))
 print("-----------------------------")
-
+"""
 
 
 #print("Relazioni in T1:")
@@ -451,13 +488,23 @@ print()
 filtro_etichette_contrazione(T1.nodes(data = True), comp3)
 filtro_etichette_contrazione(T2.nodes(data = True), comp3)
 
+
+contrazione_comp3(T1)
+
+
 print("Dopo filtro:")
+for x in T1.nodes(data=True):
+    print(x)
+for x in T1.edges:
+    print(x)
+print("-----------------------------")
+
+"""
 visualizza_etichette(T1.nodes(data = True))
 print("-----------------------------")
 visualizza_etichette(T2.nodes(data = True))
 print("-----------------------------")
 
-"""
 for x in comp3:
     print(x.valore)
     print("Configurazioni:", end=' ')
