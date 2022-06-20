@@ -7,6 +7,7 @@ from collections import defaultdict, Counter
 from pygraphviz import AGraph
 import math
 import copy
+import matplotlib.pyplot as plt
 
 class etichetta:
     
@@ -119,6 +120,36 @@ class LCA:
 
     def __str__(self):
         return str(self.LCA_dict)
+
+def draw_tree(tree):
+    """ 
+    Draw the tree using networkx's drawing methods.
+    NOTE 1: Networkx uses matplotlib to display the tree. If you are using a Notebook-like
+    environment (Jupyter, CoLab) it will be display automatically. 
+    If you are using it from command line it will be necessary to run `plt.show()` to 
+    display it.
+    NOTE 2: Due to an unreliable behaviour of netxwork and pygraph it is necessary to
+    create a copy of the input tree and loop over the nodes twice. Beware this in case
+    you want to display very large trees.
+    Parameters: 
+    tree: MP3-treesim tree representation
+    """
+
+    drawtree = nx.convert_node_labels_to_integers(tree.T)
+    labels = nx.get_node_attributes(drawtree, 'label')
+
+    for node in drawtree.nodes(data=True):
+        del node[1]['label']
+
+    try:
+        pos =  nx.nx_agraph.graphviz_layout(drawtree, prog="dot")#nx.nx_pydot.pydot_layout(drawtree, prog='dot')
+    except:
+        pos = None
+
+    nx.draw_networkx(
+        drawtree, pos=pos, labels=labels)
+    
+    plt.show()
 
 #Metodi per relazioni
 
@@ -411,60 +442,79 @@ def visualizza_etichette(nodi):
 def contrazione_comp3(tree):
 
     nodi_copia = copy.deepcopy(tree.nodes(data = True))
+    presenza_nodi_foglia = True
+  
+    while(presenza_nodi_foglia):
+        presenza_nodi_foglia = False
+        for nodo in nodi_copia:
+            if nodo[1]['label']=='': #controllo se è un nodo vuoto da contrarre              
+                if len(list(tree.successors(nodo[0]))) == 0: #caso foglia, caso 1
+                    #rimuovo arco tra nodo e antenato
+                    antenato = list(tree.predecessors(nodo[0]))[0]
+                    tree.remove_edge(antenato, nodo[0])
+                    #rimuovo nodo
+                    tree.remove_node(nodo[0])
+        nodi_copia = copy.deepcopy(tree.nodes(data = True))
+        for nodo in nodi_copia:
+            if nodo[1]['label']=='':
+                if len(list(tree.successors(nodo[0]))) == 0:
+                    presenza_nodi_foglia = True
 
+    nodi_copia = copy.deepcopy(tree.nodes(data = True))
     for nodo in nodi_copia:
-        if nodo[1]['label']=='': #controllo se è un nodo vuoto da contrarre
-            print("Trovato nodo vuoto")
-            if len(list(tree.successors(nodo[0]))) == 0: #caso foglia, caso 1
-                #rimuovo arco tra nodo e antenato
-                antenato = list(tree.predecessors(nodo[0]))[0]
-                tree.remove_edge(antenato, nodo[0])
-                #rimuovo nodo
-                print("rimuovo nodo")
-                print(nodo[0])
-                tree.remove_node(nodo[0])
-            elif len(list(tree.successors(nodo[0]))) >= 1 and len(list(tree.predecessors(nodo[0]))) == 1: #caso 2
-                print("Tolgo e compatto nodo")
-                print(nodo[0])
-                #per ogni discedente, tolgo archi dal nodo
-                #per ogni discendente, collego ad antenato
-                antenato = list(tree.predecessors(nodo[0]))[0]
-                discendenti_copia = copy.deepcopy(tree.successors(nodo[0]))
-                for discendente in discendenti_copia:
-                    tree.remove_edge(nodo[0], discendente[0])                    
-                    tree.add_edge(antenato, discendente[0])
-                #tolgo collegamento da antenato a nodo
-                tree.remove_edge(antenato, nodo[0])
-                #tolgo nodo
-                tree.remove_node(nodo[0])
+            if nodo[1]['label']=='': #controllo se è un nodo vuoto da contrarre                
+                if len(list(tree.successors(nodo[0]))) >= 1 and len(list(tree.predecessors(nodo[0]))) == 1: #caso 2 
+                    #per ogni discedente, tolgo archi dal nodo
+                    #per ogni discendente, collego ad antenato
+                    antenato = list(tree.predecessors(nodo[0]))[0]
+                    discendenti_copia = copy.deepcopy(tree.successors(nodo[0]))
+                    for discendente in discendenti_copia:
+                        tree.remove_edge(nodo[0], discendente)                    
+                        tree.add_edge(antenato, discendente)
+                    #tolgo collegamento da antenato a nodo
+                    tree.remove_edge(antenato, nodo[0])
+                    #tolgo nodo
+                    tree.remove_node(nodo[0])
                 
 
 #Main
 
-pathT1 = 'trees/tree30.gv' #Inserire qui il nome del primo albero
-pathT2 = 'trees/tree12.gv' #Inserire qui il nome del secondo albero
+pathT1 = 'trees/tree1.gv' #Inserire qui il nome del primo albero
+pathT2 = 'trees/tree2.gv' #Inserire qui il nome del secondo albero
+
+file_risultati = open("Risultati.txt", "a")
+file_risultati.write("Risultati di MTT per alberi fortemente divergenti su " + pathT1 + " e " + pathT2 +"\n")
 
 tree1 = read_dotfile(pathT1) 
 tree2 = read_dotfile(pathT2) 
-
 T1 = nx.DiGraph(nx.drawing.nx_agraph.read_dot(pathT1))
 T2 = nx.DiGraph(nx.drawing.nx_agraph.read_dot(pathT2))
-
-print("Prima del filtro:")
-
+file_risultati.write("-------------------------------"+"\n")
+#Dati iniziali T1
+file_risultati.write("Nodi di " + pathT1 + ":\n")
 for x in T1.nodes(data=True):
-    print(x)
+    file_risultati.write(str(x))
+    file_risultati.write("\n")
+file_risultati.write("Archi di " + pathT1 + ":\n")
 for x in T1.edges:
-    print(x)
+    file_risultati.write(str(x))
+    file_risultati.write("\n")
+draw_tree(tree1)
+file_risultati.write("-------------------------------"+"\n")
 
-print("-----------------------------")
+#Dati iniziali T2
+file_risultati.write("Nodi di " + pathT2 + ":\n")
+for x in T2.nodes(data=True):
+    file_risultati.write(str(x))
+    file_risultati.write("\n")
+file_risultati.write("Archi di " + pathT2 + ":\n")
+for x in T2.edges:
+    file_risultati.write(str(x))
+    file_risultati.write("\n")
+draw_tree(tree2)
+file_risultati.write("-------------------------------"+"\n")
 
-"""
-visualizza_etichette(T1.nodes(data = True))
-print("-----------------------------")
-visualizza_etichette(T2.nodes(data = True))
-print("-----------------------------")
-"""
+#Relazioni degli alberi
 
 
 #print("Relazioni in T1:")
@@ -490,14 +540,20 @@ filtro_etichette_contrazione(T2.nodes(data = True), comp3)
 
 
 contrazione_comp3(T1)
+contrazione_comp3(T2)
 
 
 print("Dopo filtro:")
-for x in T1.nodes(data=True):
+for x in T2.nodes(data=True):
     print(x)
-for x in T1.edges:
+for x in T2.edges:
     print(x)
 print("-----------------------------")
+tree1 = build_tree(T1, labeled_only=False, exclude=None)
+tree2 = build_tree(T2, labeled_only=False, exclude=None)
+
+#draw_tree(tree1)
+#draw_tree(tree2)
 
 """
 visualizza_etichette(T1.nodes(data = True))
@@ -529,5 +585,26 @@ else:
     print(t_comp/t_poss)
 
 """
+
+#Output su file
+
+
+
+file_risultati.write("Relazioni di " + pathT1 + ":\n")
+file_risultati.write("Numero di relazioni: ")
+file_risultati.write(str((len(tree1.label_list))*((len(tree1.label_list)-1)))+"\n")
+for x in tree1.label_list: 
+    file_risultati.write("Relazioni di " + x.valore+"\n")
+    file_risultati.write("Antenati: "+"\n")
+    file_risultati.write(str(x.antenati)+"\n")
+    file_risultati.write("Discendenti: "+"\n")
+    file_risultati.write(str(x.discendenti)+"\n")
+    file_risultati.write("Conviventi: "+"\n")
+    file_risultati.write(str(x.conviventi)+"\n")        
+    file_risultati.write("Non relazionati: "+"\n")
+    file_risultati.write(str(x.non_rel)+"\n")
+    file_risultati.write("-------------------------------"+"\n")
+
+file_risultati.close()
 
 #Ideato e scritto da Andrea Furini

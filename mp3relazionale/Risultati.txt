@@ -1,0 +1,148 @@
+ Risultati di MTT per alberi fortemente divergenti su trees/tree1.gv e trees/tree2.gv
+Nodi di trees/tree1.gv:
+('0', {'label': 'root'})
+('4', {'label': 'A'})
+('5', {'label': 'O,S'})
+('6', {'label': 'H'})
+('8', {'label': 'J'})
+('9', {'label': 'M'})
+('10', {'label': 'G'})
+('11', {'label': 'C'})
+('13', {'label': 'L'})
+('14', {'label': 'F'})
+Archi di trees/tree1.gv:
+('0', '4')
+('0', '5')
+('0', '6')
+('0', '8')
+('4', '9')
+('5', '10')
+('5', '11')
+('6', '13')
+('6', '14')
+Relazioni di trees/tree1.gv:
+Numero di relazioni: 90Relazioni di A
+Antenati: 
+Risultati di MTT per alberi fortemente divergenti su trees/tree1.gv e trees/tree2.gv
+Nodi di trees/tree1.gv:
+('0', {'label': 'root'})
+('4', {'label': 'A'})
+('5', {'label': 'O,S'})
+('6', {'label': 'H'})
+('8', {'label': 'J'})
+('9', {'label': 'M'})
+('10', {'label': 'G'})
+('11', {'label': 'C'})
+('13', {'label': 'L'})
+('14', {'label': 'F'})
+Archi di trees/tree1.gv:
+('0', '4')
+('0', '5')
+('0', '6')
+('0', '8')
+('4', '9')
+('5', '10')
+('5', '11')
+('6', '13')
+('6', '14')
+Relazioni di trees/tree1.gv:
+Numero di relazioni: 90Relazioni di A
+Antenati: 
+[]
+Discendenti: 
+[]
+Conviventi: 
+[]
+Non relazionati: 
+[]
+-------------------------------
+Relazioni di C
+Antenati: 
+[]
+Discendenti: 
+[]
+Conviventi: 
+[]
+Non relazionati: 
+[]
+-------------------------------
+Relazioni di F
+Antenati: 
+[]
+Discendenti: 
+[]
+Conviventi: 
+[]
+Non relazionati: 
+[]
+-------------------------------
+Relazioni di G
+Antenati: 
+[]
+Discendenti: 
+[]
+Conviventi: 
+[]
+Non relazionati: 
+[]
+-------------------------------
+Relazioni di H
+Antenati: 
+[]
+Discendenti: 
+[]
+Conviventi: 
+[]
+Non relazionati: 
+[]
+-------------------------------
+Relazioni di J
+Antenati: 
+[]
+Discendenti: 
+[]
+Conviventi: 
+[]
+Non relazionati: 
+[]
+-------------------------------
+Relazioni di L
+Antenati: 
+[]
+Discendenti: 
+[]
+Conviventi: 
+[]
+Non relazionati: 
+[]
+-------------------------------
+Relazioni di M
+Antenati: 
+[]
+Discendenti: 
+[]
+Conviventi: 
+[]
+Non relazionati: 
+[]
+-------------------------------
+Relazioni di O
+Antenati: 
+[]
+Discendenti: 
+[]
+Conviventi: 
+[]
+Non relazionati: 
+[]
+-------------------------------
+Relazioni di S
+Antenati: 
+[]
+Discendenti: 
+[]
+Conviventi: 
+[]
+Non relazionati: 
+[]
+-------------------------------
