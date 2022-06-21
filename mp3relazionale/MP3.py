@@ -214,7 +214,6 @@ def visualizza_relazioni(tree): #Visualizzazione delle relazioni
 
 def mp3_relazioni(tree): 
     build_relazioni(tree)
-    #visualizza_relazioni(tree)
 
 #Metodi per MTT
     
@@ -490,6 +489,7 @@ tree2 = read_dotfile(pathT2)
 T1 = nx.DiGraph(nx.drawing.nx_agraph.read_dot(pathT1))
 T2 = nx.DiGraph(nx.drawing.nx_agraph.read_dot(pathT2))
 file_risultati.write("-------------------------------"+"\n")
+
 #Dati iniziali T1
 file_risultati.write("Nodi di " + pathT1 + ":\n")
 for x in T1.nodes(data=True):
@@ -499,7 +499,7 @@ file_risultati.write("Archi di " + pathT1 + ":\n")
 for x in T1.edges:
     file_risultati.write(str(x))
     file_risultati.write("\n")
-draw_tree(tree1)
+#draw_tree(tree1)
 file_risultati.write("-------------------------------"+"\n")
 
 #Dati iniziali T2
@@ -511,88 +511,15 @@ file_risultati.write("Archi di " + pathT2 + ":\n")
 for x in T2.edges:
     file_risultati.write(str(x))
     file_risultati.write("\n")
-draw_tree(tree2)
+#draw_tree(tree2)
 file_risultati.write("-------------------------------"+"\n")
 
 #Relazioni degli alberi
 
-
-#print("Relazioni in T1:")
 mp3_relazioni(tree1)
-#print("Relazioni in T2:")
 mp3_relazioni(tree2)
-comp2 = build_compatibilità_a_2(tree1.label_list, tree2.label_list)
-comp3 = build_compatibilità_a_3_dalla_2(comp2)
-condivise = filtro_condivise(tree1.label_list, tree2.label_list)
-
-compatibili = set()
-print("Etichette compatibili: ", end='')
-for x in comp3:
-    compatibili.add(x.valore[0])
-    compatibili.add(x.valore[2])
-    compatibili.add(x.valore[4])
-for x in compatibili:
-    print(x, end=',')
-print()
-
-filtro_etichette_contrazione(T1.nodes(data = True), comp3)
-filtro_etichette_contrazione(T2.nodes(data = True), comp3)
-
-
-contrazione_comp3(T1)
-contrazione_comp3(T2)
-
-
-print("Dopo filtro:")
-for x in T2.nodes(data=True):
-    print(x)
-for x in T2.edges:
-    print(x)
-print("-----------------------------")
-tree1 = build_tree(T1, labeled_only=False, exclude=None)
-tree2 = build_tree(T2, labeled_only=False, exclude=None)
-
-#draw_tree(tree1)
-#draw_tree(tree2)
-
-"""
-visualizza_etichette(T1.nodes(data = True))
-print("-----------------------------")
-visualizza_etichette(T2.nodes(data = True))
-print("-----------------------------")
-
-for x in comp3:
-    print(x.valore)
-    print("Configurazioni:", end=' ')
-    print(x.configurazioni)
-    print("---------------------")
-
-
-print("Etichette condivise:")
-print(condivise, sep=' ')
-print("Terne compatibili:")
-print(sorted(compatibili))
-print("Numero massimo di terne possibili:")
-t_poss = math.comb(len(condivise), 3)
-print(t_poss)
-print("Numero terne compatibili:")
-t_comp = len(comp3)
-print(t_comp)
-print("Valore di compatibilità:")
-if(t_poss==0):
-    print(0)
-else:    
-    print(t_comp/t_poss)
-
-"""
-
-#Output su file
-
-
 
 file_risultati.write("Relazioni di " + pathT1 + ":\n")
-file_risultati.write("Numero di relazioni: ")
-file_risultati.write(str((len(tree1.label_list))*((len(tree1.label_list)-1)))+"\n")
 for x in tree1.label_list: 
     file_risultati.write("Relazioni di " + x.valore+"\n")
     file_risultati.write("Antenati: "+"\n")
@@ -605,6 +532,100 @@ for x in tree1.label_list:
     file_risultati.write(str(x.non_rel)+"\n")
     file_risultati.write("-------------------------------"+"\n")
 
+file_risultati.write("Relazioni di " + pathT2 + ":\n")
+for x in tree2.label_list: 
+    file_risultati.write("Relazioni di " + x.valore+"\n")
+    file_risultati.write("Antenati: "+"\n")
+    file_risultati.write(str(x.antenati)+"\n")
+    file_risultati.write("Discendenti: "+"\n")
+    file_risultati.write(str(x.discendenti)+"\n")
+    file_risultati.write("Conviventi: "+"\n")
+    file_risultati.write(str(x.conviventi)+"\n")        
+    file_risultati.write("Non relazionati: "+"\n")
+    file_risultati.write(str(x.non_rel)+"\n")
+    file_risultati.write("-------------------------------"+"\n")
+
+#Compatibilità
+comp2 = build_compatibilità_a_2(tree1.label_list, tree2.label_list)
+comp3 = build_compatibilità_a_3_dalla_2(comp2)
+condivise = filtro_condivise(tree1.label_list, tree2.label_list)
+file_risultati.write("Etichette condivise:\n")
+file_risultati.write(str(sorted(condivise))+"\n")
+
+compatibili = set()
+for x in comp3:
+    compatibili.add(x.valore[0])
+    compatibili.add(x.valore[2])
+    compatibili.add(x.valore[4])
+
+compatibili = str(list(compatibili))
+file_risultati.write("Etichette compatibili:\n")
+file_risultati.write(str(sorted(compatibili)) + "\n")
+file_risultati.write("---------------------" + "\n")
+
+#Terne
+file_risultati.write("Terne compatibili:" + "\n")
+for x in comp3:
+    file_risultati.write(x.valore + "\n")
+    file_risultati.write("Configurazioni: ")
+    file_risultati.write(str(x.configurazioni) + "\n")
+    file_risultati.write("---------------------" + "\n")
+
+#Contrazione e nuovi alberi
+
+filtro_etichette_contrazione(T1.nodes(data = True), comp3)
+filtro_etichette_contrazione(T2.nodes(data = True), comp3)
+
+contrazione_comp3(T1)
+contrazione_comp3(T2)
+
+tree1 = build_tree(T1, labeled_only=False, exclude=None)
+tree2 = build_tree(T2, labeled_only=False, exclude=None)
+
+file_risultati.write("Alberi dopo la contrazione: \n")
+
+#Dati nuovi T1
+file_risultati.write("Nodi di " + pathT1 + ":\n")
+for x in T1.nodes(data=True):
+    file_risultati.write(str(x))
+    file_risultati.write("\n")
+file_risultati.write("Archi di " + pathT1 + ":\n")
+for x in T1.edges:
+    file_risultati.write(str(x))
+    file_risultati.write("\n")
+#draw_tree(tree1)
+file_risultati.write("-------------------------------"+"\n")
+
+#Dati nuovi T2
+file_risultati.write("Nodi di " + pathT2 + ":\n")
+for x in T2.nodes(data=True):
+    file_risultati.write(str(x))
+    file_risultati.write("\n")
+file_risultati.write("Archi di " + pathT2 + ":\n")
+for x in T2.edges:
+    file_risultati.write(str(x))
+    file_risultati.write("\n")
+#draw_tree(tree2)
+file_risultati.write("-------------------------------"+"\n")
+
+#draw_tree(tree1)
+#draw_tree(tree2)
+
+file_risultati.write("Numero massimo di terne compatibili: ")
+t_poss = math.comb(len(condivise), 3)
+file_risultati.write(str(t_poss)+"\n")
+file_risultati.write("Numero di terne compatibili: ")
+t_comp = len(comp3)
+file_risultati.write(str(t_comp)+"\n")
+file_risultati.write("Valore di compatibilità: ")
+if(t_poss==0):
+    file_risultati.write(str(0)+"\n")
+else:    
+    file_risultati.write(str(t_comp/t_poss)+"\n")
+
 file_risultati.close()
+
+
+
 
 #Ideato e scritto da Andrea Furini
