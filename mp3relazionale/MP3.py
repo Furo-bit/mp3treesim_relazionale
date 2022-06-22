@@ -9,6 +9,8 @@ import math
 import copy
 import matplotlib.pyplot as plt
 
+from networkx.drawing.nx_pydot import write_dot
+
 class etichetta:
     
     def __init__(self, valore):
@@ -152,7 +154,6 @@ def draw_tree(tree, nome_albero):
     plt.savefig(nome_albero + ".png", format="PNG")
     plt.clf()
     
-
 #Metodi per relazioni
 def build_relazioni_ricorsione(tree, nodo): #Aggiunta di relazioni
     lista_discendenti=list()
@@ -577,6 +578,7 @@ for x in T1.edges:
     file_risultati.write(str(x))
     file_risultati.write("\n")
 draw_tree(tree1, "Risultati/T1_con_T2")
+write_dot(T1, "Risultati/T1_con_T2.gv")
 file_risultati.write("-------------------------------"+"\n")
 
 #Dati nuovi T2
@@ -589,6 +591,7 @@ for x in T2.edges:
     file_risultati.write(str(x))
     file_risultati.write("\n")
 draw_tree(tree2, "Risultati/T2_con_T1")
+write_dot(T2, "Risultati/T2_con_T1.gv")
 file_risultati.write("-------------------------------"+"\n")
 
 file_risultati.write("Numero massimo di terne compatibili: ")
