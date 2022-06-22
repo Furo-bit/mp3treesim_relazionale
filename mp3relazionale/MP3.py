@@ -121,7 +121,7 @@ class LCA:
     def __str__(self):
         return str(self.LCA_dict)
 
-def draw_tree(tree):
+def draw_tree(tree, nome_albero):
     """ 
     Draw the tree using networkx's drawing methods.
     NOTE 1: Networkx uses matplotlib to display the tree. If you are using a Notebook-like
@@ -149,10 +149,11 @@ def draw_tree(tree):
     nx.draw_networkx(
         drawtree, pos=pos, labels=labels)
     
-    plt.show()
+    plt.savefig(nome_albero + ".png", format="PNG")
+    plt.clf()
+    
 
 #Metodi per relazioni
-
 def build_relazioni_ricorsione(tree, nodo): #Aggiunta di relazioni
     lista_discendenti=list()
     
@@ -199,24 +200,10 @@ def build_relazioni(tree): #Metodo per la chiamata ai metodi che aggiungono rela
     nodo_radice = next(iterator, None)
     build_relazioni_ricorsione(tree, nodo_radice)
 
-def visualizza_relazioni(tree): #Visualizzazione delle relazioni
-    for x in tree.label_list: 
-        print("Relazioni di " + x.valore)
-        print("Antenati: ")
-        print(x.antenati)
-        print("Discendenti: ")
-        print(x.discendenti)
-        print("Conviventi: ")
-        print(x.conviventi)        
-        print("Non relazionati: ")
-        print(x.non_rel)
-        print("-------------------------------")
-
 def mp3_relazioni(tree): 
     build_relazioni(tree)
 
-#Metodi per MTT
-    
+#Metodi per MTT    
 def filtro_condivise(lista_etichette1, lista_etichette2): #ritorna elementi condivisi tra due liste
     lista_etichette_condivise = list()
     for eti1 in lista_etichette1:
@@ -410,8 +397,6 @@ def valore_in_relazioni(etichetta, valore):
 
     return x,relazione     
 
-
-
 #Metodi per contrazione
 def filtro_etichette_contrazione(nodi, oggetti_compatibili):
     lista_comp3 = list()
@@ -475,13 +460,11 @@ def contrazione_comp3(tree):
                     #tolgo nodo
                     tree.remove_node(nodo[0])
                 
-
 #Main
+pathT1 = 'trees/tree4.gv' #Inserire qui il nome del primo albero(T1)
+pathT2 = 'trees/tree5.gv' #Inserire qui il nome del secondo albero(T2)
 
-pathT1 = 'trees/tree1.gv' #Inserire qui il nome del primo albero
-pathT2 = 'trees/tree2.gv' #Inserire qui il nome del secondo albero
-
-file_risultati = open("Risultati.txt", "a")
+file_risultati = open("Risultati/Risultati.txt", "w")
 file_risultati.write("Risultati di MTT per alberi fortemente divergenti su " + pathT1 + " e " + pathT2 +"\n")
 
 tree1 = read_dotfile(pathT1) 
@@ -499,7 +482,7 @@ file_risultati.write("Archi di " + pathT1 + ":\n")
 for x in T1.edges:
     file_risultati.write(str(x))
     file_risultati.write("\n")
-#draw_tree(tree1)
+draw_tree(tree1, "Risultati/T1")
 file_risultati.write("-------------------------------"+"\n")
 
 #Dati iniziali T2
@@ -511,11 +494,10 @@ file_risultati.write("Archi di " + pathT2 + ":\n")
 for x in T2.edges:
     file_risultati.write(str(x))
     file_risultati.write("\n")
-#draw_tree(tree2)
+draw_tree(tree2, "Risultati/T2")
 file_risultati.write("-------------------------------"+"\n")
 
 #Relazioni degli alberi
-
 mp3_relazioni(tree1)
 mp3_relazioni(tree2)
 
@@ -557,11 +539,13 @@ for x in comp3:
     compatibili.add(x.valore[0])
     compatibili.add(x.valore[2])
     compatibili.add(x.valore[4])
+    
 
-compatibili = str(list(compatibili))
+compatibili = str(sorted(list(compatibili)))
 file_risultati.write("Etichette compatibili:\n")
-file_risultati.write(str(sorted(compatibili)) + "\n")
+file_risultati.write(compatibili + "\n")
 file_risultati.write("---------------------" + "\n")
+
 
 #Terne
 file_risultati.write("Terne compatibili:" + "\n")
@@ -572,7 +556,6 @@ for x in comp3:
     file_risultati.write("---------------------" + "\n")
 
 #Contrazione e nuovi alberi
-
 filtro_etichette_contrazione(T1.nodes(data = True), comp3)
 filtro_etichette_contrazione(T2.nodes(data = True), comp3)
 
@@ -593,7 +576,7 @@ file_risultati.write("Archi di " + pathT1 + ":\n")
 for x in T1.edges:
     file_risultati.write(str(x))
     file_risultati.write("\n")
-#draw_tree(tree1)
+draw_tree(tree1, "Risultati/T1_con_T2")
 file_risultati.write("-------------------------------"+"\n")
 
 #Dati nuovi T2
@@ -605,11 +588,8 @@ file_risultati.write("Archi di " + pathT2 + ":\n")
 for x in T2.edges:
     file_risultati.write(str(x))
     file_risultati.write("\n")
-#draw_tree(tree2)
+draw_tree(tree2, "Risultati/T2_con_T1")
 file_risultati.write("-------------------------------"+"\n")
-
-#draw_tree(tree1)
-#draw_tree(tree2)
 
 file_risultati.write("Numero massimo di terne compatibili: ")
 t_poss = math.comb(len(condivise), 3)
@@ -624,8 +604,3 @@ else:
     file_risultati.write(str(t_comp/t_poss)+"\n")
 
 file_risultati.close()
-
-
-
-
-#Ideato e scritto da Andrea Furini
